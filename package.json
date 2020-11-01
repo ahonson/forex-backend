@@ -4,9 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "reset": "bash db/reset_db.bash",
+    "pretest": "bash db/reset_test_db.bash",
+    "test": "nyc --reporter=html --reporter=text --reporter=clover mocha --timeout 10000",
+    "posttest": "npm run eslint",
     "start": "nodemon app.js",
-    "production": "NODE_ENV='production' node app.js"
+    "production": "NODE_ENV='production' node app.js",
+    "clean": "rm -rf node_modules package-lock.json",
+    "eslint": "eslint ."
   },
   "author": "",
   "license": "ISC",
@@ -18,5 +23,14 @@
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
     "sqlite3": "^5.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "eslint": "^7.12.1",
+    "eslint-plugin-react": "^7.21.5",
+    "javascript-style-guide": "^1.0.1",
+    "mocha": "^8.2.0",
+    "nyc": "^15.1.0"
   }
 }

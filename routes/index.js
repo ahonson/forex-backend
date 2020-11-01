@@ -27,7 +27,7 @@ router.get('/users/:email', function(req, res, next) {
             }
             res.json({
                 email: row.email,
-                password: row.password,
+                // password: row.password,
                 created: row.created,
                 usd: row.usd,
                 chf: row.chf,
@@ -44,10 +44,10 @@ router.get('/users/:email', function(req, res, next) {
 
 router.get('/transactions/:user_id', function(req, res, next) {
     let sql = "SELECT * FROM transactions WHERE user_id = ?;";
-    let user_id = req.params.user_id;
+    let userid = req.params.user_id;
 
     db.serialize(function() {
-        db.all(sql, [user_id], (err, rows) => {
+        db.all(sql, [userid], (err, rows) => {
             if (err) {
                 return console.error(err.message);
             }
@@ -70,28 +70,24 @@ router.get('/transactions/:user_id', function(req, res, next) {
             }
             return rows
                 ? console.log(rows[0])
-                : console.log(`No transaction found for user with the id ${user_id}`);
+                : console.log(`No transaction found for user with the id ${userid}`);
         });
     });
 });
 
 router.get('/payments/:user_id', function(req, res, next) {
     let sql = "SELECT * FROM payments WHERE user_id = ?;";
-    let user_id = req.params.user_id;
+    let userid = req.params.user_id;
 
-    console.log("QQQQQQQQQQQQQQQQqqqqqqqqqqqqqqqQQQQQQQQQQQQQQQQQQQQ");
     db.serialize(function() {
-        db.all(sql, [user_id], (err, rows) => {
+        db.all(sql, [userid], (err, rows) => {
             if (err) {
-                console.log("HIBAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 return console.error(err.message);
             }
             if (rows) {
-                console.log("HELYESSSSSSSSSSSSSSSSSS");
                 var myjson = {};
 
                 rows.forEach((row) => {
-                    console.log("--------------aaa--------", row.name);
                     myjson[row.id] = {
                         amount: row.amount,
                         payment_date: row.payment_date,
@@ -104,7 +100,7 @@ router.get('/payments/:user_id', function(req, res, next) {
             }
             return rows
                 ? console.log(rows[0], "9999999999999999")
-                : console.log(`No transaction found for user with the name ${user_id}`);
+                : console.log(`No transaction found for user with the name ${userid}`);
         });
     });
 });
@@ -128,8 +124,8 @@ router.get('/total', function(req, res, next) {
             myjson['nroftransactions'] = row.alltransactions;
             res.json(myjson);
             return myjson.nrofusers
-            ? console.log(myjson.nrofusers)
-            : console.log(`Something went wrong.`);
+                ? console.log(myjson.nrofusers)
+                : console.log(`Something went wrong.`);
         });
     });
 });
@@ -138,29 +134,28 @@ router.post('/addtobalance', function(req, res, next) {
     const jwt = require('jsonwebtoken');
     const token = req.body.token;
     const amount = req.body.amount;
-    const user_id = req.body.user_id;
+    const userid = req.body.user_id;
     var myMessage;
 
-    console.log(amount, user_id, token);
     jwt.verify(token, process.env.JWT_SECRET, function(err) {
         if (err) {
             // not a valid token
             myMessage = "Du är inte inloggad.";
         } else {
             // valid token
-            if (token && amount && user_id) {
+            if (token && amount && userid) {
                 myMessage = "Du är inloggad. Inbetalningen har registrerats på ditt konto.";
                 const sqlite3 = require('sqlite3').verbose();
                 const db = new sqlite3.Database('./db/forex.sqlite');
 
                 db.run("INSERT INTO payments (amount, user_id) VALUES (?, ?);",
-                    [amount, user_id], (err) => {
+                    [amount, userid], (err) => {
                         if (err) {
                             console.log(err);
                         }
                     });
                 db.run(`UPDATE users SET sek = sek + ? WHERE id = ?;`,
-                    [amount, user_id], (err) => {
+                    [amount, userid], (err) => {
                         if (err) {
                             console.log(err);
                         }
@@ -255,11 +250,11 @@ router.post('/login', function(req, res, next) {
 router.post('/transactions', function(req, res, next) {
     const jwt = require('jsonwebtoken');
     const token = req.body.token;
-    const user_id = req.body.user_id;
-    const sold_amount = req.body.sold_amount;
-    const sold_currency = req.body.sold_currency;
-    const purch_amount = req.body.purch_amount;
-    const purch_currency = req.body.purch_currency;
+    const userid = req.body.user_id;
+    const soldamount = req.body.sold_amount;
+    const soldcurrency = req.body.sold_currency;
+    const purchamount = req.body.purch_amount;
+    const purchcurrency = req.body.purch_currency;
     var myMessage;
 
     jwt.verify(token, process.env.JWT_SECRET, function(err) {
@@ -268,25 +263,28 @@ router.post('/transactions', function(req, res, next) {
             myMessage = "Du är inte inloggad.";
         } else {
             // valid token
-            if (sold_amount && sold_currency && purch_amount && purch_currency && user_id) {
+            if (soldamount && soldcurrency && purchamount && purchcurrency && userid) {
                 myMessage = "Du är inloggad. Transaktionen har sparats i databasen.";
                 const sqlite3 = require('sqlite3').verbose();
                 const db = new sqlite3.Database('./db/forex.sqlite');
 
-                db.run("INSERT INTO transactions (sold_amount, sold_currency, purch_amount, purch_currency, user_id) VALUES (?, ?, ?, ?, ?)",
-                    [sold_amount, sold_currency, purch_amount, purch_currency, user_id], (err) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                    });
-                db.run(`UPDATE users SET ${sold_currency} = ${sold_currency} - ?, ${purch_currency} = ${purch_currency} + ? WHERE id = ?`,
-                    [sold_amount, purch_amount, user_id], (err) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                    });
+                db.run("INSERT INTO transactions (sold_amount, sold_currency, purch_amount, "
+                + "purch_currency, user_id) VALUES (?, ?, ?, ?, ?)",
+                [soldamount, soldcurrency, purchamount, purchcurrency, userid], (err) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+                db.run(`UPDATE users SET ${soldcurrency} = ${soldcurrency} - ?, ${purchcurrency}`
+                + ` = ${purchcurrency} + ? WHERE id = ?`,
+                [soldamount, purchamount, userid], (err) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
             } else {
-                myMessage = "Ett eller flera värden saknas. Transaktionen har inte sparats i databasen.";
+                myMessage = "Ett eller flera värden saknas. " +
+                    "Transaktionen har inte sparats i databasen.";
             }
         }
     });
