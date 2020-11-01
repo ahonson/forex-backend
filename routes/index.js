@@ -159,7 +159,7 @@ router.post('/addtobalance', function(req, res, next) {
                             console.log(err);
                         }
                     });
-                db.run(`UPDATE users SET sek = sek + ?, WHERE id = ?;`,
+                db.run(`UPDATE users SET sek = sek + ? WHERE id = ?;`,
                     [amount, user_id], (err) => {
                         if (err) {
                             console.log(err);
