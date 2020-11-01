@@ -42,29 +42,69 @@ router.get('/users/:email', function(req, res, next) {
     });
 });
 
-router.get('/transactions/:id', function(req, res, next) {
-    let sql = "SELECT * FROM transactions WHERE id = ?;";
-    let transid = req.params.id;
+router.get('/transactions/:user_id', function(req, res, next) {
+    let sql = "SELECT * FROM transactions WHERE user_id = ?;";
+    let user_id = req.params.user_id;
 
     db.serialize(function() {
-        db.get(sql, [transid], (err, row) => {
+        db.all(sql, [user_id], (err, rows) => {
             if (err) {
                 return console.error(err.message);
             }
-            if (row) {
-                res.json({
-                    sold_currency: row.sold_currency,
-                    sold_amount: row.sold_amount,
-                    purch_currency: row.purch_currency,
-                    purch_amount: row.purch_amount,
-                    user_id: row.user_id
+            if (rows) {
+                var myjson = {};
+
+                rows.forEach((row) => {
+                    console.log(row.name);
+                    myjson[row.id] = {
+                        sold_currency: row.sold_currency,
+                        sold_amount: row.sold_amount,
+                        purch_currency: row.purch_currency,
+                        purch_amount: row.purch_amount,
+                        user_id: row.user_id
+                    };
                 });
+                res.json(myjson);
             } else {
                 res.json({ report: "There is no such transaction in the database." });
             }
-            return row
-                ? console.log(row.sold_amount)
-                : console.log(`No report found with the name ${transid}`);
+            return rows
+                ? console.log(rows[0])
+                : console.log(`No transaction found for user with the id ${user_id}`);
+        });
+    });
+});
+
+router.get('/payments/:user_id', function(req, res, next) {
+    let sql = "SELECT * FROM payments WHERE user_id = ?;";
+    let user_id = req.params.user_id;
+
+    console.log("QQQQQQQQQQQQQQQQqqqqqqqqqqqqqqqQQQQQQQQQQQQQQQQQQQQ");
+    db.serialize(function() {
+        db.all(sql, [user_id], (err, rows) => {
+            if (err) {
+                console.log("HIBAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                return console.error(err.message);
+            }
+            if (rows) {
+                console.log("HELYESSSSSSSSSSSSSSSSSS");
+                var myjson = {};
+
+                rows.forEach((row) => {
+                    console.log("--------------aaa--------", row.name);
+                    myjson[row.id] = {
+                        amount: row.amount,
+                        payment_date: row.payment_date,
+                        user_id: row.user_id
+                    };
+                });
+                res.json(myjson);
+            } else {
+                res.json({ report: "There is no such payment in the database." });
+            }
+            return rows
+                ? console.log(rows[0], "9999999999999999")
+                : console.log(`No transaction found for user with the name ${user_id}`);
         });
     });
 });
@@ -91,6 +131,51 @@ router.get('/total', function(req, res, next) {
             ? console.log(myjson.nrofusers)
             : console.log(`Something went wrong.`);
         });
+    });
+});
+
+router.post('/addtobalance', function(req, res, next) {
+    const jwt = require('jsonwebtoken');
+    const token = req.body.token;
+    const amount = req.body.amount;
+    const user_id = req.body.user_id;
+    var myMessage;
+
+    console.log(amount, user_id, token);
+    jwt.verify(token, process.env.JWT_SECRET, function(err) {
+        if (err) {
+            // not a valid token
+            myMessage = "Du är inte inloggad.";
+        } else {
+            // valid token
+            if (token && amount && user_id) {
+                myMessage = "Du är inloggad. Inbetalningen har registrerats på ditt konto.";
+                const sqlite3 = require('sqlite3').verbose();
+                const db = new sqlite3.Database('./db/forex.sqlite');
+
+                db.run("INSERT INTO payments (amount, user_id) VALUES (?, ?);",
+                    [amount, user_id], (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                db.run(`UPDATE users SET sek = sek + ?, WHERE id = ?;`,
+                    [amount, user_id], (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+            } else {
+                myMessage = "Ett eller flera värden saknas. Inbetalningen har inte registrerats.";
+            }
+        }
+    });
+
+    res.status(201).json({
+        data: {
+            msg: "Got a POST request",
+            info: myMessage
+        }
     });
 });
 
