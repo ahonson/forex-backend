@@ -9,7 +9,8 @@ router.get('/', function(req, res, next) {
         msg: "Backend-API works! You can try the following routes.",
         routes: {
             users: "/users/:email",
-            transactions: "transactions/:id"
+            transactions: "transactions/:id",
+            total: "total"
         }
     });
 });
@@ -68,13 +69,36 @@ router.get('/transactions/:id', function(req, res, next) {
     });
 });
 
+router.get('/total', function(req, res, next) {
+    let sql = "SELECT COUNT(*) AS 'allusers' FROM users;";
+    let sql2 = "SELECT COUNT(*) AS 'alltransactions' FROM transactions;";
+    let myjson = {};
+
+    db.serialize(function() {
+        db.get(sql, (err, row) => {
+            if (err) {
+                return console.error(err.message);
+            }
+            myjson['nrofusers'] = row.allusers;
+        });
+        db.get(sql2, (err, row) => {
+            if (err) {
+                return console.error(err.message);
+            }
+            myjson['nroftransactions'] = row.alltransactions;
+            res.json(myjson);
+            return myjson.nrofusers
+            ? console.log(myjson.nrofusers)
+            : console.log(`Something went wrong.`);
+        });
+    });
+});
+
 router.post('/register', function(req, res, next) {
     const bcrypt = require('bcryptjs');
     const saltRounds = 10;
     const userEmail = req.body.email;
     const userPassword = req.body.password;
-    // const sqlite3 = require('sqlite3').verbose();
-    // const db = new sqlite3.Database('./db/texts.sqlite');
 
     console.log(userPassword, userEmail);
     bcrypt.hash(userPassword, saltRounds, function(err, hash) {
@@ -104,8 +128,6 @@ router.post('/login', function(req, res, next) {
     const bcrypt = require('bcryptjs');
     const userEmail = req.body.email;
     const userPassword = req.body.password;
-    // const sqlite3 = require('sqlite3').verbose();
-    // const db = new sqlite3.Database('./db/texts.sqlite');
     const sqlQuery = "SELECT password FROM users WHERE email = '" + userEmail + "';";
 
     db.get(sqlQuery, (err, row) => {
@@ -159,13 +181,10 @@ router.post('/transactions', function(req, res, next) {
         if (err) {
             // not a valid token
             myMessage = "Du är inte inloggad.";
-            // console.log("Du är inte inloggad.");
         } else {
             // valid token
             if (sold_amount && sold_currency && purch_amount && purch_currency && user_id) {
                 myMessage = "Du är inloggad. Transaktionen har sparats i databasen.";
-                // console.log(myMessage);
-                // console.log(report);
                 const sqlite3 = require('sqlite3').verbose();
                 const db = new sqlite3.Database('./db/forex.sqlite');
 
@@ -183,7 +202,6 @@ router.post('/transactions', function(req, res, next) {
                     });
             } else {
                 myMessage = "Ett eller flera värden saknas. Transaktionen har inte sparats i databasen.";
-                // console.log(myMessage);
             }
         }
     });
@@ -198,7 +216,6 @@ router.post('/transactions', function(req, res, next) {
 
 router.post("/transactions",
     (req, res, next) => checkToken(req, res, next)
-    // (req, res) => reports.addReport(res, req.body)
 );
 
 function checkToken(req, res, next) {
