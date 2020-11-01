@@ -9,7 +9,6 @@ const assert = require("chai").assert;
 const db = require("../db/database.js");
 var token;
 
-console.log("MY DB: ", db);
 chai.should();
 
 chai.use(chaiHttp);

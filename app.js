@@ -19,9 +19,10 @@ if (process.env.NODE_ENV !== 'test') {
 // This is middleware called for all routes.
 // Middleware takes three parameters.
 app.use((req, res, next) => {
-    console.log(req.method);
-    console.log(req.path);
+    // console.log(req.method);
+    // console.log(req.path);
     next();
+    return undefined;
 });
 
 app.use(bodyParser.json()); // for parsing application/json
