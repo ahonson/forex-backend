@@ -26,6 +26,7 @@ router.get('/users/:email', function(req, res, next) {
                 return console.error(err.message);
             }
             res.json({
+                id: row.id,
                 email: row.email,
                 // password: row.password,
                 created: row.created,
