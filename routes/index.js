@@ -58,7 +58,6 @@ router.get('/transactions/:user_id', function(req, res, next) {
 
                 rows.forEach((row) => {
                     console.log(row.name);
-                    // myjson[row.id] = {
                     myjson.push({
                         sold_currency: row.sold_currency,
                         sold_amount: row.sold_amount,
@@ -129,10 +128,6 @@ router.get('/total', function(req, res, next) {
                 return console.error(err.message);
             }
             myjson['nroftransactions'] = row.alltransactions;
-            res.json(myjson);
-            return myjson.nrofusers
-                ? console.log(myjson.nrofusers)
-                : console.log(`Something went wrong.`);
         });
         db.get(sql3, (err, row) => {
             if (err) {

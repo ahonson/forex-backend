@@ -60,7 +60,7 @@ describe('Routes', () => {
                     res.should.have.status(200);
                     res.body.should.be.an("object");
                     res.body.should.be.an("object").that.has.all.keys([
-                        'nrofusers', 'nroftransactions'
+                        'nrofusers', 'nroftransactions', 'nrofpayments'
                     ]);
                     done();
                 });
@@ -73,10 +73,7 @@ describe('Routes', () => {
                 .get("/payments/1")
                 .end((err, res) => {
                     res.should.have.status(200);
-                    res.body.should.be.an("object");
-                    res.body.should.be.an("object").that.has.all.keys([
-                        '1',
-                    ]);
+                    res.body.should.be.an("array");
                     done();
                 });
         });
@@ -86,7 +83,7 @@ describe('Routes', () => {
                 .get("/payments/456")
                 .end((err, res) => {
                     res.should.have.status(200);
-                    res.body.should.be.an("object");
+                    res.body.should.be.an("array");
                     done();
                 });
         });
@@ -98,10 +95,7 @@ describe('Routes', () => {
                 .get("/transactions/2")
                 .end((err, res) => {
                     res.should.have.status(200);
-                    res.body.should.be.an("object");
-                    res.body.should.be.an("object").that.has.all.keys([
-                        '2',
-                    ]);
+                    res.body.should.be.an("array");
                     done();
                 });
         });
