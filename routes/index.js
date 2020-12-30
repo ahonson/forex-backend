@@ -59,6 +59,7 @@ router.get('/transactions/:user_id', function(req, res, next) {
                 rows.forEach((row) => {
                     console.log(row.name);
                     myjson.push({
+                        transaction_date: row.transaction_date,
                         sold_currency: row.sold_currency,
                         sold_amount: row.sold_amount,
                         purch_currency: row.purch_currency,
