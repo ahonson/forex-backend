@@ -115,7 +115,7 @@ describe('Routes', () => {
                     res.should.have.status(200);
                     res.body.should.be.an("object");
                     res.body.should.be.an("object").that.has.all.keys([
-                        'email', 'created', 'usd', 'sek', 'chf', 'eur', 'gbp'
+                        'id', 'email', 'created', 'usd', 'sek', 'chf', 'eur', 'gbp'
                     ]);
                     done();
                 });
