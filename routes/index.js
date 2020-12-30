@@ -53,17 +53,20 @@ router.get('/transactions/:user_id', function(req, res, next) {
                 return console.error(err.message);
             }
             if (rows) {
-                var myjson = {};
+                // var myjson = {};
+                var myjson = [];
 
                 rows.forEach((row) => {
                     console.log(row.name);
-                    myjson[row.id] = {
+                    // myjson[row.id] = {
+                    myjson.push({
                         sold_currency: row.sold_currency,
                         sold_amount: row.sold_amount,
                         purch_currency: row.purch_currency,
                         purch_amount: row.purch_amount,
-                        user_id: row.user_id
-                    };
+                        user_id: row.user_id,
+                        row_id: row.id
+                    });
                 });
                 res.json(myjson);
             } else {
@@ -86,14 +89,16 @@ router.get('/payments/:user_id', function(req, res, next) {
                 return console.error(err.message);
             }
             if (rows) {
-                var myjson = {};
+                // var myjson = {};
+                var myjson = [];
 
                 rows.forEach((row) => {
-                    myjson[row.id] = {
+                    myjson.push({
                         amount: row.amount,
                         payment_date: row.payment_date,
-                        user_id: row.user_id
-                    };
+                        user_id: row.user_id,
+                        row_id: row.id
+                    });
                 });
                 res.json(myjson);
             } else {
@@ -109,6 +114,7 @@ router.get('/payments/:user_id', function(req, res, next) {
 router.get('/total', function(req, res, next) {
     let sql = "SELECT COUNT(*) AS 'allusers' FROM users;";
     let sql2 = "SELECT COUNT(*) AS 'alltransactions' FROM transactions;";
+    let sql3 = "SELECT COUNT(*) AS 'allpayments' FROM payments;";
     let myjson = {};
 
     db.serialize(function() {
@@ -123,6 +129,16 @@ router.get('/total', function(req, res, next) {
                 return console.error(err.message);
             }
             myjson['nroftransactions'] = row.alltransactions;
+            res.json(myjson);
+            return myjson.nrofusers
+                ? console.log(myjson.nrofusers)
+                : console.log(`Something went wrong.`);
+        });
+        db.get(sql3, (err, row) => {
+            if (err) {
+                return console.error(err.message);
+            }
+            myjson['nrofpayments'] = row.allpayments;
             res.json(myjson);
             return myjson.nrofusers
                 ? console.log(myjson.nrofusers)
