@@ -10,6 +10,7 @@ router.get('/', function(req, res, next) {
         routes: {
             users: "/users/:email",
             transactions: "transactions/:id",
+            payments: "payments/:id",
             total: "total"
         }
     });
@@ -25,20 +26,26 @@ router.get('/users/:email', function(req, res, next) {
             if (err) {
                 return console.error(err.message);
             }
-            res.json({
-                id: row.id,
-                email: row.email,
-                // password: row.password,
-                created: row.created,
-                usd: row.usd,
-                chf: row.chf,
-                eur: row.eur,
-                gbp: row.gbp,
-                sek: row.sek
-            });
-            return row.email
-                ? console.log(row.email)
-                : console.log(`No email found with the name ${userEmail}`);
+            if (row) {
+                res.json({
+                    id: row.id,
+                    email: row.email,
+                    created: row.created,
+                    usd: row.usd,
+                    chf: row.chf,
+                    eur: row.eur,
+                    gbp: row.gbp,
+                    sek: row.sek
+                });
+                return row.email
+                    ? console.log(row.email)
+                    : console.log(`No email found with the name ${userEmail}`);
+            } else {
+                return res.json({
+                    id: "",
+                    email: ""
+                });
+            }
         });
     });
 });
